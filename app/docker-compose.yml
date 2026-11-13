@@ -52,7 +52,7 @@ services:
     environment:
       BACKEND_URL: http://backend:8080
     ports:
-      - "${FRONTEND_PORT:-8082}:80"
+      - "${FRONTEND_PORT:-8082}:8080"   # unprivileged NGINX listens on 8080
     restart: unless-stopped
 
 volumes:

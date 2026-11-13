@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- build stage -------------------------------------------------------------
-FROM node:24-alpine AS build
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
@@ -12,13 +12,14 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN npm run build
 
 # ---- runtime stage -----------------------------------------------------------
-FROM nginx:1.29-alpine
-# The official image renders /etc/nginx/templates/*.template with envsubst at start-up.
+FROM nginxinc/nginx-unprivileged:1.29-alpine
+
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /build/dist /usr/share/nginx/html
 
-# Where /api requests are forwarded: the backend Service in Kubernetes, the "backend" service in Compose.
 ENV BACKEND_URL=http://backend:8080
 
-EXPOSE 80
-HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1
+EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
+    CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null || exit 1

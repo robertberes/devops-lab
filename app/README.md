@@ -6,7 +6,7 @@ Spring Boot REST API + React SPA + PostgreSQL, packaged as two container images.
 ## Architecture
 
 ```
- Browser ──► Frontend (NGINX :80) ──/api/*──► Backend (Spring Boot :8080) ──► PostgreSQL :5432
+ Browser ──► Frontend (NGINX :8080) ──/api/*──► Backend (Spring Boot :8080) ──► PostgreSQL :5432
               serves the React SPA            REST API, validation, JPA          not exposed
 ```
 
@@ -189,5 +189,6 @@ docker buildx build --platform linux/amd64 -t ghcr.io/<user>/cmdb-frontend:<tag>
 Both Dockerfiles use only multi-arch base images (`eclipse-temurin`, `maven`, `node`, `nginx`), so ARM64 and AMD64 builds work.
 
 Kubernetes notes: the backend image runs as UID 10001; set `DB_*` from a Secret/ConfigMap and point the frontend
-`BACKEND_URL` at the backend Service (e.g. `http://backend:8080`). The frontend image runs NGINX on port 80 (master
-process as root, workers as `nginx`); to run it fully non-root, switch to `nginxinc/nginx-unprivileged` and port 8080.
+`BACKEND_URL` at the backend Service (e.g. `http://backend:8080`). The frontend image is based on
+`nginxinc/nginx-unprivileged` (uid 101, port 8080, no root process); behind a Service map port 80 to 8080.
+All Kubernetes manifests live in the Helm chart (`helm/cmdb`), see the repository root README.
