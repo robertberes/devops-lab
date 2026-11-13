@@ -1,0 +1,12 @@
+clusterRoleBinding:
+  create: true
+  clusterRoleName: view
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: headlamp.local
+      paths:
+        - path: /
+          type: Prefix
