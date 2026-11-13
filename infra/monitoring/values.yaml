@@ -11,6 +11,14 @@ kubeProxy:
   enabled: false
 
 alertmanager:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - alertmanager.local
+    paths:
+      - /
+    pathType: Prefix
   config:
     route:
       receiver: "null"
@@ -24,6 +32,14 @@ alertmanager:
       - name: "null"
 
 prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - prometheus.local
+    paths:
+      - /
+    pathType: Prefix
   prometheusSpec:
     retention: 3d
     ruleSelectorNilUsesHelmValues: false
