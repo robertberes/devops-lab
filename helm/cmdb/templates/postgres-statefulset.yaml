@@ -6,7 +6,7 @@ metadata:
     app: postgres
 spec:
   serviceName: postgres-headless
-  replicas: 0
+  replicas: 1
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: Retain
     whenScaled: Retain
