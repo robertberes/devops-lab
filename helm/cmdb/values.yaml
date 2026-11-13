@@ -5,7 +5,7 @@ replicaCount:
 frontend:
   image:
     repository: ghcr.io/robertberes/cmdb-frontend
-    tag: latest
+    tag: sha-50a315446226f5f403e9bab92988ee823a933df4
     pullPolicy: IfNotPresent
   service:
     port: 80
@@ -29,10 +29,10 @@ frontend:
       periodSeconds: 20
 
 backend:
-  seedEnabled: false
+  seedEnabled: true
   image:
     repository: ghcr.io/robertberes/cmdb-backend
-    tag: latest
+    tag: sha-50a315446226f5f403e9bab92988ee823a933df4
     pullPolicy: IfNotPresent
   port: 8080
   resources:
