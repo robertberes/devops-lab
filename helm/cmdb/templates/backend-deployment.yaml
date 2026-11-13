@@ -5,7 +5,9 @@ metadata:
   labels:
     app: backend
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount.backend }}
+  {{- end }}
   selector:
     matchLabels:
       app: backend

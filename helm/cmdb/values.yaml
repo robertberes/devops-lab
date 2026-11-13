@@ -97,5 +97,16 @@ networkPolicy:
   enabled: true
   ingressControllerNamespace: ingress-nginx
 
+autoscaling:
+  enabled: true
+  frontend:
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  backend:
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+
 rbac:
   enabled: true
