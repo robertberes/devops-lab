@@ -1,0 +1,101 @@
+replicaCount:
+  frontend: 1
+  backend: 1
+
+frontend:
+  image:
+    repository: ghcr.io/robertberes/cmdb-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 80
+  container:
+    port: 8080
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  probes:
+    readiness:
+      path: /healthz
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    liveness:
+      path: /healthz
+      initialDelaySeconds: 10
+      periodSeconds: 20
+
+backend:
+  seedEnabled: false
+  image:
+    repository: ghcr.io/robertberes/cmdb-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+  probes:
+    readiness:
+      path: /actuator/health/readiness
+      initialDelaySeconds: 20
+      periodSeconds: 10
+    liveness:
+      path: /actuator/health/liveness
+      initialDelaySeconds: 30
+      periodSeconds: 20
+  database:
+    host: postgres
+    port: 5432
+    name: cmdb
+    username: cmdb
+    poolSize: 10
+    existingSecret: cmdb-db-secret
+    passwordKey: DB_PASSWORD
+
+postgresql:
+  image:
+    repository: postgres
+    tag: "17"
+    pullPolicy: IfNotPresent
+  port: 5432
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+      periodSeconds: 5
+    liveness:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+
+ingress:
+  enabled: true
+  className: nginx
+  host: cmdb.local
+  tlsSecretName: ""
+
+networkPolicy:
+  enabled: true
+  ingressControllerNamespace: ingress-nginx
+
+rbac:
+  enabled: true
