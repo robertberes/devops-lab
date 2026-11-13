@@ -1,0 +1,73 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cmdb-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: cmdb.availability
+      rules:
+        - alert: CmdbFrontendOrBackendDown
+          expr: kube_deployment_status_replicas_available{namespace="cmdb",deployment=~"frontend|backend"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.deployment }} has no available replicas"
+            description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has had no available pods for 1 minute."
+        - alert: CmdbPostgresDown
+          expr: kube_statefulset_status_replicas_ready{namespace="cmdb",statefulset="postgres"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL is not running"
+            description: "The postgres StatefulSet in namespace {{ $labels.namespace }} has no ready pod."
+        - alert: CmdbReplicasMismatch
+          expr: |
+            kube_deployment_status_replicas_available{namespace="cmdb"}
+              < kube_deployment_spec_replicas{namespace="cmdb"}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.deployment }} is running fewer replicas than requested"
+            description: "Deployment {{ $labels.deployment }} has had fewer available replicas than desired for 5 minutes."
+        - alert: CmdbPodNotReady
+          expr: kube_pod_status_ready{namespace="cmdb",condition="true"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has not been ready for 5 minutes."
+    - name: cmdb.resources
+      rules:
+        - alert: CmdbPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="cmdb"}[15m]) > 3
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} keeps restarting"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} restarted more than 3 times in 15 minutes."
+        - alert: CmdbMemoryNearLimit
+          expr: |
+            container_memory_working_set_bytes{namespace="cmdb",container!=""}
+              / on (namespace, pod, container)
+            kube_pod_container_resource_limits{namespace="cmdb",resource="memory"} > 0.9
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} is close to its memory limit"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} uses more than 90% of its memory limit."
+        - alert: CmdbDatabaseVolumeAlmostFull
+          expr: |
+            kubelet_volume_stats_available_bytes{namespace="cmdb"}
+              / kubelet_volume_stats_capacity_bytes{namespace="cmdb"} < 0.15
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Volume {{ $labels.persistentvolumeclaim }} is almost full"
+            description: "PVC {{ $labels.persistentvolumeclaim }} has less than 15% free space."
