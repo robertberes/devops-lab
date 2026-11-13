@@ -29,7 +29,7 @@ frontend:
       periodSeconds: 20
 
 backend:
-  seedEnabled: false
+  seedEnabled: true
   image:
     repository: ghcr.io/robertberes/cmdb-backend
     tag: sha-50a315446226f5f403e9bab92988ee823a933df4
