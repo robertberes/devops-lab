@@ -1,6 +1,6 @@
-clusterRoleBinding:
-  create: true
-  clusterRoleName: view
+# clusterRoleBinding:
+#   create: true
+#   clusterRoleName: view
 
 ingress:
   enabled: true
